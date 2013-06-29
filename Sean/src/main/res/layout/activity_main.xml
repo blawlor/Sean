@@ -15,7 +15,7 @@
             android:weightSum="2" >
 
         <TableRow
-                android:id="+@id/topRow"
+                android:id="@+id/topRow"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
@@ -47,7 +47,7 @@
         </TableRow>
 
         <TableRow
-                android:id="+@id/bottomRow"
+                android:id="@+id/bottomRow"
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
