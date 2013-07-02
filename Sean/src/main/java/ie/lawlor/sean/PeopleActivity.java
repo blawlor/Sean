@@ -1,7 +1,11 @@
 package ie.lawlor.sean;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +22,8 @@ import ie.lawlor.sean.utils.DisplayUtil;
 public class PeopleActivity extends Activity implements View.OnClickListener {
 
     public static final int PICTURES_PER_VIEW = 8;
+    public static final int PICTURES_PER_ROW = 4;
+    private static final int  TAKE_PICTURE_CODE = 1;
 
     private PersonDataSource personDataSource = null;
     private List<Person> people;
@@ -25,6 +31,9 @@ public class PeopleActivity extends Activity implements View.OnClickListener {
     private Button leftArrow;
     private Button rightArrow;
     private int numberOfPages;
+    private Button selectedButton = null;
+    private int selectedRow = -1;
+    private int selectedColumn = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +71,55 @@ public class PeopleActivity extends Activity implements View.OnClickListener {
                 // Inflate a picture_table and add it.
                 View view = getLayoutInflater().inflate(R.layout.picture_table, null);
                 viewFlipper.addView(view);
+                setUpButtons(view);
             }
         }
     }
 
+    private void setUpButtons(View view) {
+        TableLayout tableLayout = (TableLayout)view;
+        for (int i = 0; i < tableLayout.getChildCount(); i++){
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            final int rowNumber = i;
+            for (int j = 0; j < row.getChildCount(); j++){
+                final int columnNumber = j;
+                Button personButton = (Button) row.getChildAt(j);
+                personButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        buttonClicked(v, rowNumber, columnNumber);
+                    }
+                });
+            }
+        }
+    }
+
+    private void buttonClicked(View v, int rowNumber, int columnNumber) {
+        this.selectedButton = (Button) v;
+        this.selectedRow = rowNumber;
+        this.selectedColumn = columnNumber;
+        if (buttonIsUnallocated(rowNumber, columnNumber)){
+            takePicture();
+        } else {
+            // Display picture/speak picture name
+        }
+    }
+
+    private boolean buttonIsUnallocated(int rowNumber, int columnNumber) {
+        return ((currentPage*PICTURES_PER_VIEW)+ (rowNumber * PICTURES_PER_ROW) + columnNumber) >= people.size();
+    }
+
+    private void takePicture() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(takePictureIntent, TAKE_PICTURE_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Bundle extras = data.getExtras();
+        Bitmap imageBitmap = (Bitmap) extras.get("data");
+        selectedButton.setBackgroundDrawable(new BitmapDrawable(imageBitmap));
+    }
 
     private void setUpArrows() {
         leftArrow = (Button)findViewById(R.id.left);
